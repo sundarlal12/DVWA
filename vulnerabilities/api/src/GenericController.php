@@ -50,6 +50,25 @@ class GenericController
 		return $response;
 	}
 
+ /**
+  * Processes the incoming HTTP request and produces an appropriate HTTP response based on the command.
+  * 
+  * @example
+  * let controller = new GenericController();
+  * controller.command = "teapot";
+  * controller.processRequest(); 
+  * // Sends header as '418 I'm a teapot' and prints teapot-related response body if applicable.
+  * 
+  * @param {string} command - The command used to determine which HTTP response should be sent.
+  * 
+  * @returns {void} Sends HTTP response to client based on the command and exits script execution.
+  * 
+  * @description
+  *   - Handles specific HTTP methods and generates respective responses: 'teapot', 'notfound', 'notSupported', 'unprocessable', and 'options'.
+  *   - Outputs the HTTP header based on the status code from the chosen response.
+  *   - Sends the response body if available and if the 'body' key is defined in the response object.
+  *   - Terminates script execution after processing the request ensuring no further code runs.
+  */
 	public function processRequest() {
 		switch ($this->command) {
 			case "teapot":
