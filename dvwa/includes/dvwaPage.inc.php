@@ -197,6 +197,17 @@ function dvwaThemeGet() {
 }
 
 
+/**
+ * Retrieves the current security level setting.
+ * @example
+ * var securityLevel = dvwaSecurityLevelGet();
+ * console.log(securityLevel); // Outputs: 'low', 'medium', 'high', or 'impossible'
+ * @returns {string} The current security level.
+ * @description
+ *   - Priority is given to a security level set via a cookie.
+ *   - If authentication is disabled, returns the default security level.
+ *   - Defaults to 'impossible' if no other conditions are met.
+ */
 function dvwaSecurityLevelGet() {
 	global $_DVWA;
 
@@ -279,6 +290,31 @@ function messagesPopAllToHtml() {
 
 // --END (message functions)
 
+/**
+ * Generates and outputs the HTML structure for a DVWA page.
+ * @example
+ * let pPage = {
+ *   title: "Home",
+ *   body: "<p>Welcome to DVWA!</p>",
+ *   page_id: "home",
+ *   source_button: true,
+ *   help_button: false,
+ * };
+ * dvwaHtmlEcho(pPage);
+ * // This outputs the complete HTML page structure for the given pPage configuration.
+ * @param {Object} pPage - The page object containing the structure and configuration for the DVWA page.
+ * @param {string} pPage.title - The title of the DVWA page.
+ * @param {string} pPage.body - The body content of the DVWA page.
+ * @param {string} pPage.page_id - The ID of the current page to highlight the active menu item.
+ * @param {boolean} [pPage.source_button] - Whether to include the source button in the system info HTML.
+ * @param {boolean} [pPage.help_button] - Whether to include the help button in the system info HTML.
+ * @returns {void} Outputs the complete HTML structure directly.
+ * @description
+ *   - Builds navigation menus dynamically based on user authentication state.
+ *   - Sets HTTP headers for cache control and content type.
+ *   - Outputs user and system information depending on login state.
+ *   - Higher security roles may influence the menu items rendered.
+ */
 function dvwaHtmlEcho( $pPage ) {
 	$menuBlocks = array();
 
@@ -451,6 +487,28 @@ function dvwaHtmlEcho( $pPage ) {
 }
 
 
+/**
+ * Renders and outputs an HTML page with specific headers and content based on the provided page data.
+ * 
+ * @example
+ * const pageData = {
+ *   title: "Help Page",
+ *   body: "<p>This is the help content.</p>"
+ * };
+ * dvwaHelpHtmlEcho(pageData);
+ * // The function will output an HTML document with the given title and body.
+ * 
+ * @param {Object} pPage - The page data containing the title and body.
+ * @param {string} pPage.title - The title of the HTML document.
+ * @param {string} pPage.body - The body content of the HTML document.
+ * 
+ * @returns {void} - This function does not return a value, it outputs an HTML document directly.
+ * 
+ * @description
+ *   - Sends HTTP headers to prevent caching and specify content type as UTF-8 encoded HTML.
+ *   - Includes external stylesheets and icons depending on the DVWA configuration.
+ *   - Uses a theme class for styling the body of the HTML document.
+ */
 function dvwaHelpHtmlEcho( $pPage ) {
 	// Send Headers
 	Header( 'Cache-Control: no-cache, must-revalidate');   // HTTP/1.1
@@ -487,6 +545,21 @@ function dvwaHelpHtmlEcho( $pPage ) {
 }
 
 
+/**
+ * Renders an HTML page with specified headers and content.
+ * @example
+ * dvwaSourceHtmlEcho({ title: 'Home Page', body: '<h1>Welcome to DVWA</h1>' });
+ * // Outputs an HTML page with the given title and body content.
+ * @param {Object} pPage - An object containing page details.
+ * @param {string} pPage.title - The title of the HTML page.
+ * @param {string} pPage.body - The body content of the HTML page.
+ * @returns {void} This function does not return a value.
+ * @description
+ *   - The function sends HTTP headers to ensure the page is not cached, sets content type, and specifies expiration.
+ *   - It constructs an HTML document using the provided title and body content.
+ *   - Uses a global constant `DVWA_WEB_PAGE_TO_ROOT` to reference stylesheets and favicon.
+ *   - Applies a dynamic theme class to the body tag using `dvwaThemeGet()` function.
+ */
 function dvwaSourceHtmlEcho( $pPage ) {
 	// Send Headers
 	Header( 'Cache-Control: no-cache, must-revalidate');   // HTTP/1.1
@@ -558,6 +631,17 @@ else {
 	$DBMS = "No DBMS selected.";
 }
 
+/**
+ * Establishes a connection to the DVWA database based on the configured DBMS.
+ * @example
+ * dvwaDatabaseConnect();
+ * // Connects to either MySQL or PostgreSQL database as configured, or SQLite if specified.
+ * @description
+ *   - Utilizes global configuration variables to determine database connection parameters.
+ *   - Supports MySQL connections with PDO for prepared statements.
+ *   - Triggers a redirect to setup page in case of a connection failure to MySQL.
+ *   - Only MySQL and SQLite are supported; PostgreSQL displays a message of non-support.
+ */
 function dvwaDatabaseConnect() {
 	global $_DVWA;
 	global $DBMS;
@@ -606,6 +690,18 @@ function dvwaRedirect( $pLocation ) {
 }
 
 // XSS Stored guestbook function --
+/**
+ * Retrieves and formats comments from the guestbook for display on the page.
+ * @example
+ * let guestbookHTML = dvwaGuestbook();
+ * console.log(guestbookHTML); // Outputs formatted HTML with names and comments.
+ * @returns {string} A HTML string containing formatted guestbook entries.
+ * @description
+ *   - Escapes user input if the security level is set to 'impossible' to prevent XSS attacks.
+ *   - Uses global database connection to run the query.
+ *   - Assumes the existence of a function dvwaSecurityLevelGet to determine current security level.
+ *   - Organizes each comment entry in a div with id "guestbook_comments".
+ */
 function dvwaGuestbook() {
 	$query  = "SELECT name, comment FROM guestbook";
 	$result = mysqli_query($GLOBALS["___mysqli_ston"],  $query );
@@ -630,6 +726,22 @@ function dvwaGuestbook() {
 
 
 // Token functions --
+/**
+ * Validates the given CSRF token against the session token and handles redirection if invalid.
+ * @example
+ * $user_token = "abcd1234";
+ * $session_token = "abcd1234";
+ * $returnURL = "/login.php";
+ * $result = checkToken($user_token, $session_token, $returnURL);
+ * echo $result; // true or redirects to login page
+ * @param {string} $user_token - The CSRF token provided by the user for validation.
+ * @param {string} $session_token - The actual CSRF token stored in the session.
+ * @param {string} $returnURL - The URL to redirect to if validation fails.
+ * @returns {bool} True if authentication is disabled or tokens match; otherwise, no return due to redirection.
+ * @description
+ *   - Utilizes global variable $_DVWA to check if authentication is disabled.
+ *   - Performs a redirect using dvwaRedirect function if the tokens do not match.
+ */
 function checkToken( $user_token, $session_token, $returnURL ) {  # Validate the given (CSRF) token
 	global $_DVWA;
 

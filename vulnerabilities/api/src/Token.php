@@ -27,6 +27,15 @@ class Token {
 		return $ret;
 	}
 
+ /**
+  * Decrypts a given ciphertext using OpenSSL and verifies its integrity.
+  * @param {string} ciphertext - The encrypted text in base64 format, constructed with components separated by ":::::".
+  * @returns {string|boolean} Returns the decrypted cleartext if successful, or false on failure.
+  * @description
+  *   - The function expects the ciphertext to contain exactly three components: tag, iv, and value, separated by ":::::".
+  *   - Utilizes OpenSSL's AES-256-GCM encryption cipher for decryption.
+  *   - May return false if the components of the ciphertext are not as expected or if decryption fails.
+  */
 	private static function decrypt($ciphertext) {
 		$str = base64_decode ($ciphertext);
 		$bits = explode (":::::", $str);

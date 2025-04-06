@@ -23,6 +23,17 @@ class Login
 		return $token;
 	}
 
+ /**
+  * Checks the validity of an access token.
+  * @example
+  * $isValid = check_access_token('exampleToken123');
+  * echo $isValid // true or false;
+  * @param {string} $token - The access token to be validated.
+  * @returns {bool} True if the token is valid, false otherwise.
+  * @description
+  *   - Relies on a separate Token object to decrypt the token.
+  *   - A valid token requires a matching secret and an expiration date in the future.
+  */
 	public static function check_access_token($token) {
 		$tokenObj = new Token();
 		$decrypted = $tokenObj->decrypt_token ($token);
